@@ -1,8 +1,8 @@
-"""create all tables
+"""initial tables
 
-Revision ID: e33d919c6875
-Revises: 
-Create Date: 2026-03-11 22:30:38.749032
+Revision ID: c19bf15c3f70
+Revises: 05cc403a6e5a
+Create Date: 2026-04-10 20:49:40.515955
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e33d919c6875'
-down_revision: Union[str, Sequence[str], None] = None
+revision: str = 'c19bf15c3f70'
+down_revision: Union[str, Sequence[str], None] = '05cc403a6e5a'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -33,7 +33,7 @@ def upgrade() -> None:
     sa.Column('telegram', sa.String(), nullable=True),
     sa.Column('telegramChatId', sa.String(), nullable=True),
     sa.Column('isSeller', sa.Boolean(), nullable=False),
-    sa.Column('createdAt', sa.TIMESTAMP(), nullable=False),
+    sa.Column('createdAt', sa.TIMESTAMP(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('userId'),
     sa.UniqueConstraint('login'),
     sa.UniqueConstraint('telegram'),
@@ -43,22 +43,11 @@ def upgrade() -> None:
     op.create_table('cart',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('userId', sa.Uuid(), nullable=False),
-    sa.Column('createdAt', sa.TIMESTAMP(), nullable=False),
+    sa.Column('createdAt', sa.TIMESTAMP(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['userId'], ['users.userId'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('userId')
     )
-    op.create_table('market',
-    sa.Column('marketId', sa.Uuid(), nullable=False),
-    sa.Column('userId', sa.Uuid(), nullable=False),
-    sa.Column('marketName', sa.String(), nullable=False),
-    sa.Column('description', sa.String(), nullable=True),
-    sa.Column('createdAt', sa.TIMESTAMP(), nullable=False),
-    sa.ForeignKeyConstraint(['userId'], ['users.userId'], ),
-    sa.PrimaryKeyConstraint('marketId'),
-    sa.UniqueConstraint('marketName')
-    )
-    op.create_index(op.f('ix_market_userId'), 'market', ['userId'], unique=False)
     op.create_table('orders',
     sa.Column('orderId', sa.Uuid(), nullable=False),
     sa.Column('userId', sa.Uuid(), nullable=False),
@@ -67,55 +56,49 @@ def upgrade() -> None:
     sa.Column('deliveryCity', sa.String(), nullable=False),
     sa.Column('phone', sa.String(), nullable=False),
     sa.Column('deliveryComment', sa.String(), nullable=True),
-    sa.Column('status', sa.Enum('GENERATED', 'IN_PROGRESS', 'COMPLETED', 'DECLINED', name='orderstatus'), nullable=False),
-    sa.Column('createdAt', sa.TIMESTAMP(), nullable=False),
+    sa.Column('status', sa.String(), nullable=False),
+    sa.Column('createdAt', sa.TIMESTAMP(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['userId'], ['users.userId'], ),
     sa.PrimaryKeyConstraint('orderId'),
     sa.UniqueConstraint('orderId', 'userId', name='unique_order_user')
     )
+    op.create_table('user_tokens',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('userId', sa.Uuid(), nullable=False),
+    sa.Column('token', sa.String(), nullable=False),
+    sa.Column('expiresAt', sa.TIMESTAMP(timezone=True), nullable=False),
+    sa.Column('createdAt', sa.TIMESTAMP(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['userId'], ['users.userId'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_user_tokens_token'), 'user_tokens', ['token'], unique=True)
+    op.create_table('cartItems',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('cartId', sa.Uuid(), nullable=False),
+    sa.Column('productId', sa.UUID(), nullable=False),
+    sa.Column('quantity', sa.INTEGER(), nullable=False),
+    sa.ForeignKeyConstraint(['cartId'], ['cart.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('order_markets',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('orderId', sa.Uuid(), nullable=False),
-    sa.Column('marketId', sa.Uuid(), nullable=False),
+    sa.Column('marketId', sa.UUID(), nullable=False),
     sa.Column('totalPrice', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('status', sa.Enum('GENERATED', 'CONFIRMED', 'PAID', 'DECLINED', 'COMPLETED', name='orderstatus'), nullable=False),
-    sa.ForeignKeyConstraint(['marketId'], ['market.marketId'], ),
+    sa.Column('status', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['orderId'], ['orders.orderId'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('orderId', 'marketId', name='unique_order_market')
     )
-    op.create_table('products',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('marketId', sa.Uuid(), nullable=False),
-    sa.Column('name', sa.String(), nullable=False),
-    sa.Column('description', sa.String(), nullable=False),
-    sa.Column('category', sa.Enum('electronics', 'clothing', 'food', 'home', 'beauty', 'sports', 'books', 'other', name='productcategory'), nullable=False),
-    sa.Column('price', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('img', sa.String(), nullable=False),
-    sa.Column('available', sa.INTEGER(), nullable=False),
-    sa.Column('createdAt', sa.TIMESTAMP(), nullable=False),
-    sa.ForeignKeyConstraint(['marketId'], ['market.marketId'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_products_category'), 'products', ['category'], unique=False)
-    op.create_index(op.f('ix_products_marketId'), 'products', ['marketId'], unique=False)
     op.create_table('OrderItems',
     sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('orderId', sa.Uuid(), nullable=False),
     sa.Column('orderMarketId', sa.Uuid(), nullable=False),
-    sa.Column('productId', sa.Uuid(), nullable=False),
+    sa.Column('productId', sa.UUID(), nullable=False),
     sa.Column('quantity', sa.INTEGER(), nullable=False),
     sa.Column('priceAtPurchase', sa.DECIMAL(precision=10, scale=2), nullable=False),
+    sa.ForeignKeyConstraint(['orderId'], ['orders.orderId'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['orderMarketId'], ['order_markets.id'], ),
-    sa.ForeignKeyConstraint(['productId'], ['products.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('cartItems',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('cartId', sa.Uuid(), nullable=False),
-    sa.Column('productId', sa.Uuid(), nullable=False),
-    sa.Column('quantity', sa.INTEGER(), nullable=False),
-    sa.ForeignKeyConstraint(['cartId'], ['cart.id'], ),
-    sa.ForeignKeyConstraint(['productId'], ['products.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
@@ -124,15 +107,12 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_table('cartItems')
     op.drop_table('OrderItems')
-    op.drop_index(op.f('ix_products_marketId'), table_name='products')
-    op.drop_index(op.f('ix_products_category'), table_name='products')
-    op.drop_table('products')
     op.drop_table('order_markets')
+    op.drop_table('cartItems')
+    op.drop_index(op.f('ix_user_tokens_token'), table_name='user_tokens')
+    op.drop_table('user_tokens')
     op.drop_table('orders')
-    op.drop_index(op.f('ix_market_userId'), table_name='market')
-    op.drop_table('market')
     op.drop_table('cart')
     op.drop_index(op.f('ix_users_isSeller'), table_name='users')
     op.drop_table('users')

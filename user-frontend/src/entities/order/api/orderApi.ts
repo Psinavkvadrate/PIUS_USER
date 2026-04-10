@@ -5,15 +5,15 @@ export const orderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getOrders: builder.query<OrderHistoryResponse, number | void>({
       query: (page = 1) => ({
-        url: "/orders/my",
+        url: "/orders",
         params: { page },
       }),
-      providesTags: ["Order"],
+      providesTags: ["Orders"],
     }),
 
     getOrderDetails: builder.query<OrderDetails, string>({
       query: (id) => `/orders/${id}`,
-      providesTags: ["Order"],
+      providesTags: ["Orders"],
     }),
 
     createOrder: builder.mutation<
@@ -30,7 +30,7 @@ export const orderApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Order", "Cart", "User"],
+      invalidatesTags: ["Orders", "Cart", "User"],
     }),
   }),
 });

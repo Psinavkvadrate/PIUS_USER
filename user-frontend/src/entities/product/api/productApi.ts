@@ -5,20 +5,17 @@ export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query<any, ProductFilters>({
       query: (filters) => ({
-        url: "/products",
+        url: "http://localhost:8002/api/products",
         params: filters,
       }),
-      providesTags: ["Product"],
+      providesTags: ["Products"],
     }),
 
     getProduct: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
-      providesTags: ["Product"],
+      providesTags: ["Products"],
     }),
   }),
 });
 
-export const {
-  useGetProductsQuery,
-  useGetProductQuery,
-} = productApi;
+export const { useGetProductsQuery, useGetProductQuery } = productApi;

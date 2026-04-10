@@ -3,12 +3,11 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8000/api",
+    baseUrl: "http://localhost:8001/api/v1",
     credentials: "include",
 
     prepareHeaders: (headers) => {
-      const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMDAwMDBhYS0wMDAwLTBhMDAtMGFhMC1hMDBhMGEwMDAwMGEifQ._PQ4GHbZ5tKH6sAzPIRU_XiYfLpyai5vHFEYvIF12LE";
+      const token = localStorage.getItem("token");
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
@@ -20,7 +19,7 @@ export const baseApi = createApi({
     },
   }),
 
-  tagTypes: ["User", "Cart", "Order", "Product"],
+  tagTypes: ["User", "Cart", "Orders", "Products"],
 
   endpoints: () => ({}),
 });
