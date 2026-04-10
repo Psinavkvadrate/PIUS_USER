@@ -9,7 +9,7 @@ import { OrderCard } from "../../../entities/order/ui/OrderCard";
 import { OrderDetailsModal } from "../../../features/order/ui/OrderDetailsModal";
 
 export const UserOrdersPage = () => {
-  const { data, isLoading } = useGetOrdersQuery();
+  const { data } = useGetOrdersQuery();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: selectedOrder } = useGetOrderDetailsQuery(selectedId!, {

@@ -25,7 +25,7 @@ class CartService:
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"{SELLER_SERVICE_URL}/get_products_info",
+                    f"{SELLER_SERVICE_URL}/products/by-ids",
                     json={"productIds": str_ids},
                 )
                 response.raise_for_status()
