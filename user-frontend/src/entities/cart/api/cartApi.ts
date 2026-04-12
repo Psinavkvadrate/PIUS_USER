@@ -4,7 +4,7 @@ import type { CartResponse } from "../model/types";
 export const cartApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCart: builder.query<CartResponse, void>({
-      query: () => "/cart/",
+      query: () => "/cart",
       providesTags: ["Cart"],
     }),
 
@@ -17,16 +17,13 @@ export const cartApi = baseApi.injectEndpoints({
       invalidatesTags: ["Cart", "User"],
     }),
 
-    updateCartItem: builder.mutation<
-      any,
-      { productId: string; quantity: number }
-    >({
+    updateCartItem: builder.mutation({
       query: ({ productId, quantity }) => ({
-        url: "/cart/item/update",
+        url: `/cart/${productId}`,
         method: "PATCH",
         body: { productId, quantity },
       }),
-      invalidatesTags: ["Cart", "User"],
+      invalidatesTags: ["Cart"],
     }),
 
     removeCartItem: builder.mutation<any, string>({

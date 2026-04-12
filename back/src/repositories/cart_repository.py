@@ -59,7 +59,7 @@ class CartRepository:
         )
 
         result = await self.session.execute(query)
-        return result.scalar_one_or_none()
+        return result.scalars().all()
 
     async def update_items_quantity(
         self, user_id: UUID, product_id: UUID, quantity: int

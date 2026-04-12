@@ -23,8 +23,8 @@ export const Filters = ({ onApply }: Props) => {
     onApply({
       search: search || undefined,
       category: category || undefined,
-      min_price: minPrice ? Number(minPrice) : undefined,
-      max_price: maxPrice ? Number(maxPrice) : undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
       available: available || undefined,
     });
   };

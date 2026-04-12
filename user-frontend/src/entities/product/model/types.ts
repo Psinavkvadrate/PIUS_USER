@@ -32,7 +32,7 @@ export interface ProductFilters {
   limit: number;
   search?: string;
   category?: string;
-  min_price?: number;
-  max_price?: number;
+  minPrice?: number;
+  maxPrice?: number;
   available?: boolean;
 }

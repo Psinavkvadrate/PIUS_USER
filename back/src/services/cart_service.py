@@ -86,7 +86,8 @@ class CartService:
                     "price": price,
                     "available": prod_data["available"],
                     "quantity": item.quantity,
-                    "marketId": prod_data["marketId"],
+                    "img": prod_data.get("img"),
+                    "market": prod_data.get("market"),
                 }
             )
 

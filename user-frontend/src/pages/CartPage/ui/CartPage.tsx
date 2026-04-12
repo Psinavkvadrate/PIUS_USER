@@ -24,7 +24,7 @@ export const CartPage = () => {
     await updateCart({
       productId: id,
       quantity: item.quantity + 1,
-    });
+    }).unwrap();
   };
 
   const decrease = async (id: string) => {
@@ -38,10 +38,10 @@ export const CartPage = () => {
   };
 
   const remove = async (id: string) => {
-    await removeCart(id);
+    await removeCart(id).unwrap();;
   };
 
-  const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const totalPrice = Math.round(items.reduce((sum, i) => sum + i.price * i.quantity, 0) * 100) / 100;
 
   return (
     <Box sx={{ maxWidth: 1000, mx: "auto", mt: 3 }}>

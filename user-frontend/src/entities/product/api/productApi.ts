@@ -5,7 +5,7 @@ export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query<any, ProductFilters>({
       query: (filters) => ({
-        url: "http://localhost:8002/api/products",
+        url: "cart/products",
         params: filters,
       }),
       providesTags: ["Products"],

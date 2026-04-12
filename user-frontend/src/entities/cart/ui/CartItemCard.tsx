@@ -28,10 +28,9 @@ export const CartItemCard = ({
 
         <Box flex={1}>
           <Typography fontWeight={600}>{item.name}</Typography>
-          <Typography color="text.secondary">
+          {/* <Typography color="text.secondary">
             {item.market.marketName}
-          </Typography>
-
+          </Typography> */}
           <Typography mt={1}>{item.price} ₽</Typography>
         </Box>
 
@@ -48,7 +47,7 @@ export const CartItemCard = ({
         </Box>
 
         <Typography width={100} textAlign="right">
-          {item.price * item.quantity} ₽
+          {Math.round(item.price * item.quantity * 100) / 100} ₽
         </Typography>
 
         <IconButton onClick={onDelete} color="error">
