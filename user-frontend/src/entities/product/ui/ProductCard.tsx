@@ -46,7 +46,7 @@ export const ProductCard = ({ product, onOpen }: Props) => {
 
         <Button
           fullWidth
-          disabled={isLoading}
+          disabled={isLoading || !product.available}
           sx={{
             mt: 2,
             background: "#6c5ce7",

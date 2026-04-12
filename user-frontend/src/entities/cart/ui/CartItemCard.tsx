@@ -35,13 +35,13 @@ export const CartItemCard = ({
         </Box>
 
         <Box display="flex" alignItems="center" gap={1}>
-          <IconButton onClick={onDecrease}>
+          <IconButton onClick={onDecrease} disabled={item.quantity === 1}>
             <RemoveIcon />
           </IconButton>
 
           <Typography>{item.quantity}</Typography>
 
-          <IconButton onClick={onIncrease}>
+          <IconButton onClick={onIncrease} disabled={item.quantity === item.available}>
             <AddIcon />
           </IconButton>
         </Box>
