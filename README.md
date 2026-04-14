@@ -123,6 +123,6 @@ yarn test
 ---
 
 ## 6. Контакты и поддержка
-Автор: Новиков П.А., Виницкий Е.Р. Селивон С.И. | ПИН-36
-GitHub: [Мой Github](https://github.com/Psinavkvadrate)
-Связь: tg: @psina_v_kvadrate
+- Автор: Новиков П.А., Виницкий Е.Р. Селивон С.И. | ПИН-36
+- GitHub: [Мой Github](https://github.com/Psinavkvadrate)
+- Связь: tg: @psina_v_kvadrate
