@@ -42,7 +42,6 @@ class OrderRepository:
             try:
                 for market_id, market_info in markets_data.items():
 
-                    # --- создаём market ---
                     order_market = OrderMarket(
                         orderId=new_order.orderId,
                         marketId=market_id,
@@ -52,7 +51,6 @@ class OrderRepository:
                     self.session.add(order_market)
                     await self.session.flush()
 
-                    # --- создаём items ---
                     for item in market_info["items"]:
                         order_item = OrderItems(
                             orderId=new_order.orderId,
@@ -63,7 +61,6 @@ class OrderRepository:
                         )
                         self.session.add(order_item)
 
-                    # --- запрос в seller ---
                     url = f"{SELLER_SERVICE_URL}/internal/products/orders"
 
                     payload = {
@@ -93,10 +90,9 @@ class OrderRepository:
                     print("SELLER STATUS:", response.status_code)
                     print("SELLER RESPONSE:", response.text)
 
-                    response.raise_for_status()  # ВАЖНО: внутри цикла
+                    response.raise_for_status()  
 
             except httpx.HTTPStatusError as e:
-                # ошибка от seller (4xx/5xx)
                 print("SELLER ERROR RESPONSE:", e.response.text)
 
                 await self.session.rollback()
@@ -107,7 +103,6 @@ class OrderRepository:
                 )
 
             except httpx.RequestError:
-                # seller недоступен
                 await self.session.rollback()
 
                 raise HTTPException(
@@ -116,7 +111,6 @@ class OrderRepository:
                 )
 
             except Exception as e:
-                # любая другая ошибка
                 import traceback
                 print(traceback.format_exc())
 
@@ -127,7 +121,6 @@ class OrderRepository:
                     detail="Внутренняя ошибка при создании заказа",
                 )
 
-        # --- чистим корзину ---
         await self.session.execute(
             delete(CartItems).where(CartItems.cartId == cart_id)
         )

@@ -59,8 +59,8 @@ export const Header = ({ cartCount, userName }: Props) => {
             Заказы
           </Button>
 
-          <IconButton color="inherit">
-            <Badge badgeContent={cartCount} color="secondary" onClick={() => navigate("/cart")}>
+          <IconButton color="inherit" onClick={() => navigate("/cart")}>
+            <Badge badgeContent={cartCount} color="secondary">
               <ShoppingCartIcon />
             </Badge>
           </IconButton>
