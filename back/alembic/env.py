@@ -11,11 +11,12 @@ from src.models.order_item import OrderItems
 from src.models.cart import Cart
 from src.models.user_token import UserToken
 from src.models.user import User
+from src.app.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-
+config.set_main_option("sqlalchemy.url", str(settings.postgres_url))
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:

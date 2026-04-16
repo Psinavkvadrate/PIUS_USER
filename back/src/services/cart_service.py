@@ -1,11 +1,13 @@
-from src.app.config import settings
-from fastapi import HTTPException
 from uuid import UUID
+
 import httpx
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.app.config import settings
+from src.core.exceptions import NotEnoughStockError, NotFoundError
 from src.repositories.cart_repository import CartRepository
-from src.schemas.cart_schemas import UpdateCartItemRequestSchema, AddToCartRequestSchema
-from src.core.exceptions import NotFoundError, NotEnoughStockError
+from src.schemas.cart_schemas import AddToCartRequestSchema, UpdateCartItemRequestSchema
 
 SELLER_SERVICE_URL = settings.SELLER_SERVICE_URL
 

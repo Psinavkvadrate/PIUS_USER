@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 10072005
+      POSTGRES_DB: user
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./back
+    container_name: backend_app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./back/.env
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./back:/app
+    command: >
+      sh -c "alembic upgrade head &&
+            uvicorn src.app.application:get_app --host 0.0.0.0 --port 8001 --factory"
+
+  frontend:
+    build: ./user-frontend
+    container_name: frontend_app
+    ports:
+      - "5171:5171"
+    volumes:
+      - ./user-frontend:/app
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.251.0/24

@@ -2,9 +2,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import uvicorn
 import asyncio
 import logging
+
+import uvicorn
 
 logging.basicConfig(
     level=logging.INFO,
@@ -16,8 +17,8 @@ logging.basicConfig(
 async def main() -> None:
     uvicorn.run(
         "src.app.application:get_app",
-        host="127.0.0.1",
-        port=8001,
+        host="0.0.0.0",
+        port=8000,
         reload=True,
         factory=True,
         reload_dirs=["/app/src"],

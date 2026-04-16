@@ -1,14 +1,16 @@
+import math
+from collections import defaultdict
+from uuid import UUID
+
 import httpx
 from fastapi import HTTPException
-import math
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from collections import defaultdict
-from src.core.exceptions import NotFoundError, NotEnoughStockError
-from src.repositories.order_repository import OrderRepository
-from src.repositories.cart_repository import CartRepository
-from src.schemas.order_schemas import CreateOrderRequestSchema
+
 from src.app.config import settings
+from src.core.exceptions import NotEnoughStockError, NotFoundError
+from src.repositories.cart_repository import CartRepository
+from src.repositories.order_repository import OrderRepository
+from src.schemas.order_schemas import CreateOrderRequestSchema
 
 SELLER_SERVICE_URL = settings.SELLER_SERVICE_URL
 
@@ -25,7 +27,8 @@ class OrderService:
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"{SELLER_SERVICE_URL}/products/by-ids", json={"productIds": str_ids}
+                    f"{SELLER_SERVICE_URL}/products/by-ids",
+                    json={"productIds": str_ids},
                 )
                 response.raise_for_status()
                 return {product["id"]: product for product in response.json()}
@@ -168,14 +171,14 @@ class OrderService:
                     "items": [],
                 }
 
-                markets_dict[market_id_str]["items"].append(
-                    {
-                        "productId": order_item.productId,
-                        "name": product_info[str(order_item.productId)]["name"],
-                        "quantity": order_item.quantity,
-                        "priceAtPurchase": float(order_item.priceAtPurchase),
-                    }
-                )
+            markets_dict[market_id_str]["items"].append(
+                {
+                    "productId": order_item.productId,
+                    "name": product_info[str(order_item.productId)]["name"],
+                    "quantity": order_item.quantity,
+                    "priceAtPurchase": float(order_item.priceAtPurchase),
+                }
+            )
 
         return {
             "orderId": first_order.orderId,

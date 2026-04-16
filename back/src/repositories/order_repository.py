@@ -1,17 +1,16 @@
 from decimal import Decimal
 from typing import Sequence
-from sqlalchemy import select, delete, func, Row
-from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
+
+from sqlalchemy import Row, delete, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.models.cart_items import CartItems
 from src.models.order import Order, OrderStatus
-from src.models.order_market import OrderMarket
 from src.models.order_item import OrderItems
+from src.models.order_market import OrderMarket
 from src.schemas.order_schemas import CreateOrderRequestSchema
-import httpx
-from src.app.config import settings
 
-SELLER_SERVICE_URL = settings.SELLER_SERVICE_URL
 
 class OrderRepository:
     def __init__(self, session: AsyncSession):
@@ -24,7 +23,7 @@ class OrderRepository:
         total_order_price: float,
         markets_data: dict,
         cart_id: UUID,
-    ) -> UUID:
+    ) -> UUID | None:
 
         new_order = Order(
             userId=user_id,
@@ -38,94 +37,27 @@ class OrderRepository:
         self.session.add(new_order)
         await self.session.flush()
 
-        async with httpx.AsyncClient() as client:
-            try:
-                for market_id, market_info in markets_data.items():
+        for market_id, market_info in markets_data.items():
+            order_market = OrderMarket(
+                orderId=new_order.orderId,
+                marketId=market_id,
+                totalPrice=market_info["total"],
+                status=OrderStatus.GENERATED.value,
+            )
+            self.session.add(order_market)
+            await self.session.flush()
 
-                    order_market = OrderMarket(
-                        orderId=new_order.orderId,
-                        marketId=market_id,
-                        totalPrice=market_info["total"],
-                        status=OrderStatus.GENERATED.value,
-                    )
-                    self.session.add(order_market)
-                    await self.session.flush()
-
-                    for item in market_info["items"]:
-                        order_item = OrderItems(
-                            orderId=new_order.orderId,
-                            orderMarketId=order_market.id,
-                            productId=item["product_id"],
-                            quantity=item["quantity"],
-                            priceAtPurchase=item["price"],
-                        )
-                        self.session.add(order_item)
-
-                    url = f"{SELLER_SERVICE_URL}/internal/products/orders"
-
-                    payload = {
-                        "marketId": str(market_id),
-                        "userId": str(user_id),
-                        "deliveryAddress": order_data.deliveryAddress,
-                        "totalAmount": market_info["total"],
-                        "items": [
-                            {
-                                "productId": item["product_id"],  # FIX
-                                "quantity": item["quantity"],
-                                "price": item["price"],
-                            }
-                            for item in market_info["items"]
-                        ],
-                    }
-
-                    print("REQUEST URL:", url)
-                    print("REQUEST BODY:", payload)
-
-                    response = await client.post(
-                        url,
-                        json=payload,
-                        timeout=5.0,
-                    )
-
-                    print("SELLER STATUS:", response.status_code)
-                    print("SELLER RESPONSE:", response.text)
-
-                    response.raise_for_status()  
-
-            except httpx.HTTPStatusError as e:
-                print("SELLER ERROR RESPONSE:", e.response.text)
-
-                await self.session.rollback()
-
-                raise HTTPException(
-                    status_code=500,
-                    detail="Ошибка при создании заказа у продавца",
+            for item in market_info["items"]:
+                order_item = OrderItems(
+                    orderId=new_order.orderId,
+                    orderMarketId=order_market.id,
+                    productId=item["product_id"],
+                    quantity=item["quantity"],
+                    priceAtPurchase=item["price"],
                 )
+                self.session.add(order_item)
 
-            except httpx.RequestError:
-                await self.session.rollback()
-
-                raise HTTPException(
-                    status_code=503,
-                    detail="Сервис продавца недоступен",
-                )
-
-            except Exception as e:
-                import traceback
-                print(traceback.format_exc())
-
-                await self.session.rollback()
-
-                raise HTTPException(
-                    status_code=500,
-                    detail="Внутренняя ошибка при создании заказа",
-                )
-
-        await self.session.execute(
-            delete(CartItems).where(CartItems.cartId == cart_id)
-        )
-
-        await self.session.commit()
+        await self.session.execute(delete(CartItems).where(CartItems.cartId == cart_id))
 
         return new_order.orderId
 
@@ -167,8 +99,8 @@ class OrderRepository:
             select(Order, OrderMarket, OrderItems)
             .join(OrderMarket, OrderMarket.orderId == Order.orderId)
             .join(OrderItems, OrderItems.orderMarketId == OrderMarket.id)
-        ).where(Order.userId == user_id, Order.orderId == order_id)
+            .where(Order.userId == user_id, Order.orderId == order_id)
+        )
 
         result = await self.session.execute(query)
-
         return result.all()

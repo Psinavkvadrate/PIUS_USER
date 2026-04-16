@@ -1,27 +1,31 @@
-from uuid import UUID
-from fastapi import APIRouter
-from fastapi.params import Depends
-from starlette import status
-from src.services.cart_service import SELLER_SERVICE_URL, CartService
-from src.schemas.cart_schemas import (
-    AddToCartResponseSchema,
-    CartResponseSchema,
-    UpdateCartItemResponseSchema,
-    UpdateCartItemRequestSchema,
-    DeleteCartItemResponseSchema,
-    AddToCartRequestSchema,
-)
-from logreg.security import get_current_user
-from src.models.user import User
-from src.app.dependencies import get_cart_service
-from pydantic import BaseModel
 from typing import List
+from uuid import UUID
 
 import httpx
+from fastapi import APIRouter
+from fastapi.params import Depends
+from pydantic import BaseModel
+from starlette import status
+
+from logreg.security import get_current_user
+from src.app.dependencies import get_cart_service
+from src.models.user import User
+from src.schemas.cart_schemas import (
+    AddToCartRequestSchema,
+    AddToCartResponseSchema,
+    CartResponseSchema,
+    DeleteCartItemResponseSchema,
+    UpdateCartItemRequestSchema,
+    UpdateCartItemResponseSchema,
+)
+from src.services.cart_service import SELLER_SERVICE_URL, CartService
 
 router = APIRouter(prefix="/api/v1/cart", tags=["cart"])
+
+
 class ProductsByIdsRequest(BaseModel):
     productIds: List[UUID]
+
 
 @router.post(
     "/",
@@ -96,6 +100,7 @@ async def get_products_by_ids_via_cart(
     products = await cart_service.get_products_from_seller(data.productIds)
 
     return list(products.values())
+
 
 @router.get("/products")
 async def get_products_via_cart(
